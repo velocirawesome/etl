@@ -1,0 +1,333 @@
+openapi: 3.0.3
+info:
+  title: ETL Microservice API
+  description: |
+    Asynchronous ETL pipeline for Country data extraction, transformation, and loading.
+    Supports triggering background jobs, monitoring job status, and retrieving loaded Country records.
+  version: 1.0.0
+  contact:
+    name: ETL Demo Team
+    email: etl-demo@functionize.com
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+tags:
+  - name: ETL Jobs
+    description: Operations for triggering and monitoring ETL jobs
+  - name: Country Data
+    description: Operations for retrieving Country records from completed jobs
+
+paths:
+  /etl/run:
+    post:
+      tags:
+        - ETL Jobs
+      summary: Trigger a new ETL job
+      description: |
+        Submits a new ETL job to fetch JSON from the provided sourceUrl, transform it into Country entities,
+        and load it into a job-specific database table. The endpoint returns immediately (async execution).
+        The most recent job will be tracked and queryable via `/etl/status`.
+      operationId: runEtlJob
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EtlRunRequest'
+            examples:
+              example1:
+                summary: Public REST Countries API
+                value:
+                  sourceUrl: "https://restcountries.com/v3.1/all"
+              example2:
+                summary: Local test JSON file
+                value:
+                  sourceUrl: "http://localhost:8080/test-data/countries.json"
+      responses:
+        '202':
+          description: Job accepted and queued for async execution
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EtlRunResponse'
+              examples:
+                success:
+                  value:
+                    jobId: 1
+                    status: "RUNNING"
+                    message: "ETL job started successfully"
+        '400':
+          description: Invalid request (e.g., missing or malformed sourceUrl)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_url:
+                  value:
+                    error: "Bad Request"
+                    message: "sourceUrl must be a valid HTTP/HTTPS URL"
+        '500':
+          description: Internal server error (e.g., database unavailable)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /etl/status:
+    get:
+      tags:
+        - ETL Jobs
+      summary: Get latest job status
+      description: |
+        Returns the status of the most recent ETL job. Includes metadata such as start time,
+        record counts at each phase (extracted/transformed/loaded), and error messages if failed.
+        Clients can poll this endpoint to monitor job progress.
+      operationId: getEtlStatus
+      responses:
+        '200':
+          description: Latest job status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EtlStatusResponse'
+              examples:
+                running:
+                  summary: Job in progress
+                  value:
+                    jobId: 1
+                    sourceUrl: "https://restcountries.com/v3.1/all"
+                    status: "RUNNING"
+                    startTime: "2025-12-05T10:30:00Z"
+                    endTime: null
+                    recordsExtracted: 250
+                    recordsTransformed: 0
+                    recordsLoaded: 0
+                    errorMessage: null
+                success:
+                  summary: Job completed successfully
+                  value:
+                    jobId: 1
+                    sourceUrl: "https://restcountries.com/v3.1/all"
+                    status: "SUCCESS"
+                    startTime: "2025-12-05T10:30:00Z"
+                    endTime: "2025-12-05T10:30:15Z"
+                    recordsExtracted: 250
+                    recordsTransformed: 250
+                    recordsLoaded: 250
+                    errorMessage: null
+                failed:
+                  summary: Job failed during extraction
+                  value:
+                    jobId: 1
+                    sourceUrl: "https://invalid-url.example.com/data"
+                    status: "FAILED"
+                    startTime: "2025-12-05T10:30:00Z"
+                    endTime: "2025-12-05T10:30:05Z"
+                    recordsExtracted: 0
+                    recordsTransformed: 0
+                    recordsLoaded: 0
+                    errorMessage: "HTTP 404 Not Found: Unable to fetch data from sourceUrl"
+        '404':
+          description: No jobs found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_jobs:
+                  value:
+                    error: "Not Found"
+                    message: "No ETL jobs found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /country:
+    get:
+      tags:
+        - Country Data
+      summary: Get all Country records from latest successful job
+      description: |
+        Returns all Country records loaded by the most recent successful ETL job.
+        Each record includes the country code and a JSON object with country fields
+        (name, population, region, etc.) that survived the transformation phase.
+      operationId: getCountries
+      responses:
+        '200':
+          description: Country records retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CountryRecord'
+              examples:
+                success:
+                  value:
+                    - code: "US"
+                      data:
+                        name: "United States"
+                        population: 331002651
+                        region: "Americas"
+                        capital: "Washington, D.C."
+                        area: 9833520.5
+                    - code: "CA"
+                      data:
+                        name: "Canada"
+                        population: 37742154
+                        region: "Americas"
+                        capital: "Ottawa"
+                        area: 9984670.0
+        '404':
+          description: No successful jobs found or job-specific table does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_successful_jobs:
+                  value:
+                    error: "Not Found"
+                    message: "No successful ETL jobs found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    EtlRunRequest:
+      type: object
+      required:
+        - sourceUrl
+      properties:
+        sourceUrl:
+          type: string
+          format: uri
+          description: HTTP/HTTPS URL of the JSON data source to fetch
+          example: "https://restcountries.com/v3.1/all"
+          minLength: 1
+          maxLength: 2048
+
+    EtlRunResponse:
+      type: object
+      required:
+        - jobId
+        - status
+        - message
+      properties:
+        jobId:
+          type: integer
+          format: int64
+          description: Unique identifier for the started job
+          example: 1
+        status:
+          type: string
+          enum: [RUNNING]
+          description: Initial job status (always RUNNING)
+          example: "RUNNING"
+        message:
+          type: string
+          description: Human-readable confirmation message
+          example: "ETL job started successfully"
+
+    EtlStatusResponse:
+      type: object
+      required:
+        - jobId
+        - sourceUrl
+        - status
+        - startTime
+        - recordsExtracted
+        - recordsTransformed
+        - recordsLoaded
+      properties:
+        jobId:
+          type: integer
+          format: int64
+          description: Unique identifier for the job
+          example: 1
+        sourceUrl:
+          type: string
+          format: uri
+          description: URL of the JSON data source
+          example: "https://restcountries.com/v3.1/all"
+        status:
+          type: string
+          enum: [RUNNING, SUCCESS, FAILED]
+          description: Current job execution status
+          example: "SUCCESS"
+        startTime:
+          type: string
+          format: date-time
+          description: Job start timestamp (ISO 8601 UTC)
+          example: "2025-12-05T10:30:00Z"
+        endTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: Job completion timestamp (ISO 8601 UTC); null if still running
+          example: "2025-12-05T10:30:15Z"
+        recordsExtracted:
+          type: integer
+          description: Count of records fetched from sourceUrl
+          example: 250
+        recordsTransformed:
+          type: integer
+          description: Count of records successfully transformed into Country entities
+          example: 250
+        recordsLoaded:
+          type: integer
+          description: Count of records persisted to the database
+          example: 250
+        errorMessage:
+          type: string
+          nullable: true
+          description: Error details if status is FAILED; null otherwise
+          example: null
+
+    CountryRecord:
+      type: object
+      required:
+        - code
+        - data
+      properties:
+        code:
+          type: string
+          description: ISO 3166-1 alpha-2 or alpha-3 country code (primary key)
+          example: "US"
+          minLength: 2
+          maxLength: 3
+        data:
+          type: object
+          description: JSON object containing country fields that survived transformation (name, population, region, etc.)
+          additionalProperties: true
+          example:
+            name: "United States"
+            population: 331002651
+            region: "Americas"
+            capital: "Washington, D.C."
+            area: 9833520.5
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Short error type (e.g., "Bad Request", "Not Found")
+          example: "Bad Request"
+        message:
+          type: string
+          description: Detailed error message explaining what went wrong
+          example: "sourceUrl must be a valid HTTP/HTTPS URL"

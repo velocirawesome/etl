@@ -47,10 +47,10 @@ This is a one-off demo application for an interview exercise, not a production s
 Each phase of the ETL pipeline (Extraction, Transformation, Loading) must be independently testable and loggable. Failures in one phase MUST not crash the service; instead, job status reflects failure state clearly.
 
 **Non-negotiable**:
-- **Extraction**: Consume external API robustly; log count and any HTTP errors encountered
-- **Transformation**: Parse/validate JSON schema; map to Country entity; log processed/filtered counts
-- **Loading**: Persist transformed data with transactional integrity; log insertion counts and rollback events
-- Each phase reports success/failure to the orchestrator (EtlService)
+- **Extraction**: Consume external sourceUrl robustly; fetch JSON array of Country objects; log count and any HTTP errors encountered
+- **Transformation**: Parse JSON and map to Country entity structure (code, name, population, region, etc.); validate required fields (code, name); filter/skip invalid records; log processed/transformed/filtered counts
+- **Loading**: Create job-specific Country table (e.g., countries_job_<jobId>); persist valid Country records with transactional integrity; log insertion counts and rollback events
+- Each phase reports success/failure to the orchestrator (EtlJobService); parent EtlJob table updated with status and counts
 
 **Implementation patterns**:
 - Each service (ExtractionService, TransformationService, LoadingService) returns a result object or throws a domain exception
@@ -62,9 +62,9 @@ Each phase of the ETL pipeline (Extraction, Transformation, Loading) must be ind
 Code organization follows three tiers to ensure maintainability and testability even under time pressure.
 
 **Non-negotiable**:
-- **Controller Layer** (EtlController, CountryController): HTTP request/response mapping, status code selection, no business logic
-- **Service Layer** (EtlService, ExtractionService, TransformationService, LoadingService): All business logic, orchestration, error handling
-- **Repository Layer** (CountryRepository via Spring Data JPA): Data access only; no business rules
+- **Controller Layer** (EtlController, CountryController): HTTP request/response mapping, status code selection, no business logic; routes to EtlJobService and job-specific Country queries
+- **Service Layer** (EtlJobService, ExtractionService, TransformationService, LoadingService): All business logic, orchestration, error handling; Country entity mapping in TransformationService
+- **Data Access Layer** (jOOQ DSLContext): Job-specific Country table creation (countries_job_<jobId>), parent EtlJob table CRUD, runtime SQL generation, parameterized queries
 
 **Acceptable shortcuts**:
 - DTOs can be simple (no elaborate mapping frameworks needed; manual mapping is fine for small datasets)
@@ -114,24 +114,31 @@ Logging is the primary observability tool for this demo. At minimum, the service
 - **Framework**: Spring Boot 4.latest
 - **Build Tool**: Maven
 - **Database**: H2 (in-memory)
-- **ORM**: Spring Data JPA + Hibernate
+- **Data Access**: jOOQ (dynamic SQL builder for runtime table operations)
 - **HTTP Client**: Spring WebClient (WebFlux)
-- **JSON Processing**: Jackson + JsonPath + JSON Schema Validator
+- **JSON Processing**: Jackson 3 (JsonMapper) + JsonPath + JSON Schema Validator
 - **Async**: Spring @Async with ThreadPoolTaskExecutor (default or custom config)
 - **Logging**: SLF4J + Logback
 
 **Rationale**:
 - Spring Boot provides rapid scaffolding and sensible defaults for a 60-minute demo
 - H2 in-memory eliminates external database setup
-- Spring Data JPA is familiar to Java developers and handles simple CRUD
+- **jOOQ** (not JPA) because:
+  - Dynamic table creation at runtime (user-supplied table names)
+  - Type-safe SQL DSL with no boilerplate (faster than JPA entity generation or raw JDBC)
+  - Excellent JSON column handling (id + JSON data schema)
+  - Built-in SQL injection prevention (parameterized queries)
+  - Modern fluent API demonstrates current Java practices
+  - ~20 min implementation time vs. 30-40 min for JPA or raw JDBC
 - WebClient (non-blocking) prepares for async extraction if needed
 - Jackson is standard for JSON and integrates seamlessly
+- See `orm_layer.md` for detailed comparative analysis and implementation guidance
 
 ## Development Workflow
 
 **Before the interview session**:
-1. **Project skeleton** initialized: Maven POM with all dependencies declared (Spring Web, Data JPA, H2, WebClient, etc.)
-2. **Database configuration** ready: application.yml with H2 datasource, JPA settings (ddl-auto: create-drop)
+1. **Project skeleton** initialized: Maven POM with all dependencies declared (Spring Web, jOOQ, H2, WebClient, Jackson 3, etc.)
+2. **Database configuration** ready: application.yml with H2 datasource; JooqConfig bean set up to provide DSLContext with SQLDialect.H2
 3. **Package structure** created (empty): controller/, service/, repository/, model/entity, model/dto, config/, exception/
 4. **IDE verified**: IDE is functional, language SDK/JDK is configured, can run and debug immediately
 
