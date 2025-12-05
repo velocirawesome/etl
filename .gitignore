@@ -1,0 +1,73 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.backup
+release.properties
+.flattened-pom.xml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+.classpath
+.project
+.settings/
+*.jks
+*.keystore
+
+# Build outputs
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Java
+*.log
+*.hprof
+*.trace
+
+# OS
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# Local environment
+.env
+.env.local
+*.properties.local
+application-local.yml
+application-local.yaml
+
+# Gradle (if added later)
+.gradle/
+build/
+
+# Node (if added for frontend)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Test coverage
+coverage/
+.jacoco/
+*.exec
+
+# Database files
+*.db
+*.sqlite
+*.h2.db
+
+# Project-specific
+.specify/
+.claude/
+.mvn/wrapper/maven-wrapper.jar

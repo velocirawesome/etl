@@ -1,0 +1,3 @@
+# Maven RC file - suppress Java 21+ deprecation warnings from old Guava in Maven 3.9.x
+MAVEN_OPTS="--add-opens=java.base/sun.misc=ALL-UNNAMED"
+export MAVEN_OPTS

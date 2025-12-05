@@ -15,16 +15,15 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.0</version>
+        <version>4.0.0</version>
         <relativePath/>
     </parent>
 
     <properties>
         <java.version>25</java.version>
-        <maven.compiler.source>25</maven.compiler.source>
-        <maven.compiler.target>25</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jackson-version>3.0.0</jackson-version>
+        <argLine>--add-opens java.base/sun.misc=ALL-UNNAMED</argLine>
     </properties>
 
     <dependencies>
@@ -82,14 +81,11 @@
                     </excludes>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
+                <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <source>25</source>
-                    <target>25</target>
-                    <release>25</release>
+                    <argLine>${argLine}</argLine>
                 </configuration>
             </plugin>
         </plugins>

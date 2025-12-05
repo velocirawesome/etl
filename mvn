@@ -1,0 +1,4 @@
+#!/bin/bash
+# Suppress Java 21+ Unsafe warnings from old Guava library in Maven
+export MAVEN_OPTS="--add-opens=java.base/sun.misc=ALL-UNNAMED -XX:+IgnoreUnrecognizedVMOptions"
+exec mvn "$@"
