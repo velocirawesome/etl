@@ -36,11 +36,11 @@ Where:
 
 ### Tasks
 
-- [ ] T001 Initialize Spring Boot project via start.spring.io with Maven, Java 25, Spring Boot 4.0.0, dependencies: web, jooq, h2, devtools
-- [ ] T002 [P] Update `/w/functionize/etl/pom.xml` to add Jackson 3 dependency (tools.jackson.core:jackson-databind:3.0.0) and configure spring-boot-maven-plugin
-- [ ] T003 [P] Create `/w/functionize/etl/src/main/resources/application.yml` with H2 datasource, jOOQ SQLDialect, schema initialization, and logging configuration
-- [ ] T004 [P] Create package structure: `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/{controller,service,repository,model/{entity,dto},config,exception}`
-- [ ] T005 [P] Create test package structure: `/w/functionize/etl/src/test/java/dev/velocirawesome/etl/{integration,unit}`
+- [X] T001 Initialize Spring Boot project via start.spring.io with Maven, Java 25, Spring Boot 4.0.0, dependencies: web, jooq, h2, devtools
+- [X] T002 [P] Update `/w/functionize/etl/pom.xml` to add Jackson 3 dependency (tools.jackson.core:jackson-databind:3.0.0) and configure spring-boot-maven-plugin
+- [X] T003 [P] Create `/w/functionize/etl/src/main/resources/application.yml` with H2 datasource, jOOQ SQLDialect, schema initialization, and logging configuration
+- [X] T004 [P] Create package structure: `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/{controller,service,repository,model/{entity,dto},config,exception}`
+- [X] T005 [P] Create test package structure: `/w/functionize/etl/src/test/java/dev/velocirawesome/etl/{integration,unit}`
 
 ---
 
