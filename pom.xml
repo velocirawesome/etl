@@ -24,6 +24,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jackson-version>3.0.0</jackson-version>
         <argLine>--add-opens java.base/sun.misc=ALL-UNNAMED</argLine>
+        <jvm.opts>-XX:TieredStopAtLevel=1 -noverify --enable-native-access=ALL-UNNAMED --sun-misc-unsafe-memory-access=allow</jvm.opts>
     </properties>
 
     <dependencies>
@@ -79,6 +80,7 @@
                             <artifactId>spring-boot-devtools</artifactId>
                         </exclude>
                     </excludes>
+                    <jvmArguments>${jvm.opts}</jvmArguments>
                 </configuration>
             </plugin>
             <plugin>

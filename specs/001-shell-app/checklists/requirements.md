@@ -3,7 +3,7 @@
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2025-12-05
 **Status**: Complete (Revised specification with job-per-run architecture)
-**Feature**: [Initial ETL Shell Application](/w/functionize/etl/specs/001-shell-app/spec.md)
+**Feature**: [Initial ETL Shell Application](/w/velocirawesome/etl/specs/001-shell-app/spec.md)
 
 ## Content Quality
 

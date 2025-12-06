@@ -664,7 +664,7 @@ logging:
   level:
     org.jooq: INFO
     org.springframework.web: INFO
-    com.functionize.etl: DEBUG
+    com.velocirawesome.etl: DEBUG
 ```
 
 #### Configuration URL Breakdown
@@ -963,7 +963,7 @@ public class EtlJobService {
         </encoder>
     </appender>
 
-    <logger name="com.functionize.etl" level="DEBUG"/>
+    <logger name="com.velocirawesome.etl" level="DEBUG"/>
     <logger name="org.jooq" level="INFO"/>
     <logger name="org.springframework.web" level="INFO"/>
 

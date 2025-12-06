@@ -7,7 +7,7 @@ info:
   version: 1.0.0
   contact:
     name: ETL Demo Team
-    email: etl-demo@functionize.com
+    email: etl-demo@velocirawesome.com
 
 servers:
   - url: http://localhost:8080

@@ -37,10 +37,10 @@ Where:
 ### Tasks
 
 - [X] T001 Initialize Spring Boot project via start.spring.io with Maven, Java 25, Spring Boot 4.0.0, dependencies: web, jooq, h2, devtools
-- [X] T002 [P] Update `/w/functionize/etl/pom.xml` to add Jackson 3 dependency (tools.jackson.core:jackson-databind:3.0.0) and configure spring-boot-maven-plugin
-- [X] T003 [P] Create `/w/functionize/etl/src/main/resources/application.yml` with H2 datasource, jOOQ SQLDialect, schema initialization, and logging configuration
-- [X] T004 [P] Create package structure: `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/{controller,service,repository,model/{entity,dto},config,exception}`
-- [X] T005 [P] Create test package structure: `/w/functionize/etl/src/test/java/dev/velocirawesome/etl/{integration,unit}`
+- [X] T002 [P] Update `/w/velocirawesome/etl/pom.xml` to add Jackson 3 dependency (tools.jackson.core:jackson-databind:3.0.0) and configure spring-boot-maven-plugin
+- [X] T003 [P] Create `/w/velocirawesome/etl/src/main/resources/application.yml` with H2 datasource, jOOQ SQLDialect, schema initialization, and logging configuration
+- [X] T004 [P] Create package structure: `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/{controller,service,repository,model/{entity,dto},config,exception}`
+- [X] T005 [P] Create test package structure: `/w/velocirawesome/etl/src/test/java/dev/velocirawesome/etl/{integration,unit}`
 
 ---
 
@@ -50,15 +50,17 @@ Where:
 
 **Parallelization**: T007-T009 can run in parallel after T006 completes.
 
+**Status**: ✅ COMPLETE
+
 ### Tasks
 
-- [ ] T006 Create `/w/functionize/etl/src/main/resources/schema.sql` with DDL for etl_jobs table (job_id, source_url, status, timestamps, counts, error_message) and indexes
-- [ ] T007 [P] Create `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/config/JooqConfig.java` with DSLContext bean configured for H2 SQLDialect
-- [ ] T008 [P] Create `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/config/AsyncConfig.java` with @EnableAsync and ThreadPoolTaskExecutor bean (core pool size 2, max 5)
-- [ ] T009 [P] Create `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/exception/EtlException.java` as base exception class
-- [ ] T010 [P] Create `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/exception/ExtractionException.java` extending EtlException for HTTP fetch/parse errors
-- [ ] T011 [P] Create `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/exception/TransformationException.java` extending EtlException for validation/mapping errors
-- [ ] T012 [P] Create `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/exception/LoadingException.java` extending EtlException for database errors
+- [X] T006 Create `/w/velocirawesome/etl/src/main/resources/schema.sql` with DDL for etl_jobs table (job_id, source_url, status, timestamps, counts, error_message) and indexes
+- [X] T007 [P] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/config/JooqConfig.java` with DSLContext bean configured for H2 SQLDialect
+- [X] T008 [P] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/config/AsyncConfig.java` with @EnableAsync and ThreadPoolTaskExecutor bean (core pool size 2, max 5)
+- [X] T009 [P] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/exception/EtlException.java` as base exception class
+- [X] T010 [P] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/exception/ExtractionException.java` extending EtlException for HTTP fetch/parse errors
+- [X] T011 [P] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/exception/TransformationException.java` extending EtlException for validation/mapping errors
+- [X] T012 [P] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/exception/LoadingException.java` extending EtlException for database errors
 
 ---
 
@@ -80,32 +82,32 @@ Where:
 ### Tasks
 
 #### Entities and DTOs
-- [ ] T013 [P] [US1] Create `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/model/entity/JobStatus.java` enum with RUNNING, SUCCESS, FAILED
-- [ ] T014 [P] [US1] Create `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/model/entity/EtlJob.java` with fields: jobId, sourceUrl, status, startTime, endTime, record counts, errorMessage (with getters/setters)
-- [ ] T015 [P] [US1] Create `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/model/entity/Country.java` with fields: code (PK), data (JsonNode from tools.jackson.databind)
-- [ ] T016 [P] [US1] Create `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/model/dto/EtlRunRequest.java` with sourceUrl field (matching OpenAPI spec)
+- [ ] T013 [P] [US1] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/model/entity/JobStatus.java` enum with RUNNING, SUCCESS, FAILED
+- [ ] T014 [P] [US1] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/model/entity/EtlJob.java` with fields: jobId, sourceUrl, status, startTime, endTime, record counts, errorMessage (with getters/setters)
+- [ ] T015 [P] [US1] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/model/entity/Country.java` with fields: code (PK), data (JsonNode from tools.jackson.databind)
+- [ ] T016 [P] [US1] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/model/dto/EtlRunRequest.java` with sourceUrl field (matching OpenAPI spec)
 
 #### Repositories
-- [ ] T017 [US1] Create `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/repository/EtlJobRepository.java` with DSLContext injection
+- [ ] T017 [US1] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/repository/EtlJobRepository.java` with DSLContext injection
 - [ ] T018 [US1] Implement EtlJobRepository.createJob(sourceUrl) with concurrent-safe job ID generation (MAX+1 within @Transactional synchronized method)
 - [ ] T019 [US1] Implement EtlJobRepository update methods: updateRecordsExtracted, updateRecordsTransformed, updateRecordsLoaded, updateJobStatus (all @Transactional)
 - [ ] T020 [US1] Implement EtlJobRepository.getLatestJob() querying etl_jobs table ordered by start_time DESC LIMIT 1 with Record-to-EtlJob mapping
 
 #### Services (E-T-L)
-- [ ] T021 [P] [US1] Create `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/service/ExtractionService.java` with RestClient, fetchData(sourceUrl) method fetching JSON array, parsing with Jackson 3 ObjectMapper (tools.jackson package), logging extracted count, throwing ExtractionException on errors
-- [ ] T022 [P] [US1] Create `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/service/TransformationService.java` with transform(List<JsonNode>) method validating required fields (code, name), filtering invalid records, logging transformed count and skipped records
-- [ ] T023 [P] [US1] Create `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/service/LoadingService.java` with CountryRepository injection, load(jobId, countries) method with @Transactional, logging loaded count, throwing LoadingException on errors
-- [ ] T024 [US1] Create `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/repository/CountryRepository.java` with createJobTable(jobId) creating countries_job_<jobId> table (code VARCHAR(3) PK, data JSON)
+- [ ] T021 [P] [US1] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/service/ExtractionService.java` with RestClient, fetchData(sourceUrl) method fetching JSON array, parsing with Jackson 3 ObjectMapper (tools.jackson package), logging extracted count, throwing ExtractionException on errors
+- [ ] T022 [P] [US1] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/service/TransformationService.java` with transform(List<JsonNode>) method validating required fields (code, name), filtering invalid records, logging transformed count and skipped records
+- [ ] T023 [P] [US1] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/service/LoadingService.java` with CountryRepository injection, load(jobId, countries) method with @Transactional, logging loaded count, throwing LoadingException on errors
+- [ ] T024 [US1] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/repository/CountryRepository.java` with createJobTable(jobId) creating countries_job_<jobId> table (code VARCHAR(3) PK, data JSON)
 - [ ] T025 [US1] Implement CountryRepository.insertCountries(jobId, countries) using jOOQ batch insert with dynamic table name countries_job_<jobId>
 
 #### Orchestrator
-- [ ] T026 [US1] Create `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/service/EtlJobService.java` with injected dependencies: EtlJobRepository, ExtractionService, TransformationService, LoadingService
+- [ ] T026 [US1] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/service/EtlJobService.java` with injected dependencies: EtlJobRepository, ExtractionService, TransformationService, LoadingService
 - [ ] T027 [US1] Implement EtlJobService.executePipeline(jobId, sourceUrl) with @Async("taskExecutor") annotation, orchestrating E-T-L phases with try-catch, updating job status/counts after each phase, logging job lifecycle
 
 #### Controller and DTOs
-- [ ] T028 [P] [US1] Create `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/model/dto/EtlRunResponse.java` with jobId, status, message fields (matching OpenAPI spec)
-- [ ] T029 [P] [US1] Create `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/model/dto/ErrorResponse.java` with error, message fields (matching OpenAPI spec)
-- [ ] T030 [US1] Create `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/controller/EtlController.java` with @RestController, @RequestMapping("/etl")
+- [ ] T028 [P] [US1] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/model/dto/EtlRunResponse.java` with jobId, status, message fields (matching OpenAPI spec)
+- [ ] T029 [P] [US1] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/model/dto/ErrorResponse.java` with error, message fields (matching OpenAPI spec)
+- [ ] T030 [US1] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/controller/EtlController.java` with @RestController, @RequestMapping("/etl")
 - [ ] T031 [US1] Implement EtlController.runEtlJob(@RequestBody EtlRunRequest) with POST /etl/run mapping, calling jobRepository.createJob() and etlJobService.executePipeline(), returning ResponseEntity.accepted() with EtlRunResponse
 - [ ] T032 [US1] Add @ControllerAdvice exception handler for validation errors (400 Bad Request) and internal errors (500 Internal Server Error) returning ErrorResponse
 
@@ -126,7 +128,7 @@ Where:
 
 ### Tasks
 
-- [ ] T033 [P] [US2] Create `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/model/dto/EtlStatusResponse.java` with all fields from OpenAPI spec (jobId, sourceUrl, status, timestamps, counts, errorMessage)
+- [ ] T033 [P] [US2] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/model/dto/EtlStatusResponse.java` with all fields from OpenAPI spec (jobId, sourceUrl, status, timestamps, counts, errorMessage)
 - [ ] T034 [P] [US2] Verify EtlJobRepository.getLatestJob() query (from T020) returns correct job ordered by start_time DESC
 - [ ] T035 [US2] Implement EtlController.getStatus() with GET /etl/status mapping, calling jobRepository.getLatestJob(), mapping EtlJob to EtlStatusResponse
 - [ ] T036 [US2] Add mapToStatusResponse(EtlJob) private helper method in EtlController converting entity to DTO with proper null handling for endTime and errorMessage
@@ -149,11 +151,11 @@ Where:
 
 ### Tasks
 
-- [ ] T038 [P] [US3] Create `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/model/dto/CountryRecord.java` with code, data (JsonNode) fields (matching OpenAPI spec)
+- [ ] T038 [P] [US3] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/model/dto/CountryRecord.java` with code, data (JsonNode) fields (matching OpenAPI spec)
 - [ ] T039 [P] [US3] Implement EtlJobRepository.getLatestSuccessfulJob() querying etl_jobs WHERE status='SUCCESS' ORDER BY start_time DESC LIMIT 1
 - [ ] T040 [US3] Implement CountryRepository.getCountriesByJobId(jobId) querying countries_job_<jobId> table, fetching all records, mapping Record to Country with Jackson ObjectMapper
 - [ ] T041 [US3] Add mapToCountry(Record) private helper in CountryRepository extracting code and parsing JSON data column into JsonNode
-- [ ] T042 [US3] Create `/w/functionize/etl/src/main/java/dev/velocirawesome/etl/controller/CountryController.java` with @RestController, @RequestMapping("/country")
+- [ ] T042 [US3] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/controller/CountryController.java` with @RestController, @RequestMapping("/country")
 - [ ] T043 [US3] Implement CountryController.getCountries() with GET /country mapping, calling jobRepository.getLatestSuccessfulJob() and countryRepository.getCountriesByJobId()
 - [ ] T044 [US3] Add stream mapping Country to CountryRecord in CountryController.getCountries(), handle 404 when no successful jobs found
 
@@ -169,8 +171,8 @@ Where:
 
 ### Tasks
 
-- [ ] T045 [P] Create `/w/functionize/etl/src/test/java/dev/velocirawesome/etl/integration/EtlIntegrationTest.java` with @SpringBootTest, testEtlPipeline_withRealUrl() hitting https://restcountries.com/v3.1/all, polling /etl/status until SUCCESS, verifying /country returns records
-- [ ] T046 [P] Create `/w/functionize/etl/src/test/java/dev/velocirawesome/etl/unit/TransformationServiceTest.java` with testTransform_validRecords() and testTransform_filtersInvalidRecords() using sample JSON
+- [ ] T045 [P] Create `/w/velocirawesome/etl/src/test/java/dev/velocirawesome/etl/integration/EtlIntegrationTest.java` with @SpringBootTest, testEtlPipeline_withRealUrl() hitting https://restcountries.com/v3.1/all, polling /etl/status until SUCCESS, verifying /country returns records
+- [ ] T046 [P] Create `/w/velocirawesome/etl/src/test/java/dev/velocirawesome/etl/unit/TransformationServiceTest.java` with testTransform_validRecords() and testTransform_filtersInvalidRecords() using sample JSON
 - [ ] T047 Add SLF4J logging statements to all services (ExtractionService, TransformationService, LoadingService, EtlJobService) at INFO level for job lifecycle, phase transitions, record counts, and ERROR level for exceptions
 - [ ] T048 Run full build with `mvn verify`, test all three endpoints with curl (POST /etl/run, poll GET /etl/status, GET /country), verify 10+ countries loaded successfully
 

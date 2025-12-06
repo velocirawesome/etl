@@ -89,7 +89,7 @@ specs/001-shell-app/
 ### Source Code (repository root)
 
 ```text
-src/main/java/com/functionize/etl/
+src/main/java/dev/velocirawesome/etl/
 ├── controller/
 │   ├── EtlController.java          # POST /etl/run, GET /etl/status endpoints
 │   └── CountryController.java      # GET /country endpoint
@@ -122,7 +122,7 @@ src/main/resources/
 ├── application.yml                 # H2 datasource, jOOQ config, logging
 └── logback.xml                     # SLF4J logging configuration
 
-src/test/java/com/functionize/etl/
+src/test/java/dev/velocirawesome/etl/
 ├── integration/
 │   └── EtlIntegrationTest.java     # @SpringBootTest, end-to-end tests with real URLs
 └── unit/
@@ -132,7 +132,7 @@ src/test/java/com/functionize/etl/
 pom.xml                             # Maven dependencies: Spring Boot, jOOQ, H2, Jackson 3, JUnit 5
 ```
 
-**Structure Decision**: Single backend microservice (Option 1). Standard Spring Boot package-by-layer structure with controller/service/repository separation. All source code under `src/main/java/com/functionize/etl/`. Tests organized as integration (primary) and unit tests. No frontend or mobile components.
+**Structure Decision**: Single backend microservice (Option 1). Standard Spring Boot package-by-layer structure with controller/service/repository separation. All source code under `src/main/java/dev/velocirawesome/etl/`. Tests organized as integration (primary) and unit tests. No frontend or mobile components.
 
 ## Complexity Tracking
 

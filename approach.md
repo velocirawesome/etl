@@ -18,7 +18,7 @@ Building a Data Extraction Management (DEM) microservice that implements a compl
 
 ### Project Structure
 ```
-src/main/java/com/functionize/etl/
+src/main/java/dev/velocirawesome/etl/
 ├── controller/
 │   ├── EtlController.java          (POST /etl/run, GET /etl/status)
 │   └── CountryController.java      (GET /country)
@@ -205,7 +205,7 @@ spring:
 logging:
   level:
     root: WARN
-    com.functionize.etl: DEBUG
+    com.velocirawesome.etl: DEBUG
     org.springframework.web: INFO
   pattern:
     console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
