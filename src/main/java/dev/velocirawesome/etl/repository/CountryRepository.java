@@ -4,6 +4,8 @@ import dev.velocirawesome.etl.model.entity.Country;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +63,19 @@ public class CountryRepository {
     private Country mapRecordToCountry(org.jooq.Record record) {
         Country country = new Country();
         country.setCode(record.get("code", String.class));
-        country.setData(record.get("data", String.class));
+
+        String dataStr = record.get("data", String.class);
+        if (dataStr != null) {
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode jsonData = mapper.readTree(dataStr);
+                country.setData(jsonData);
+            } catch (Exception e) {
+                // If parsing fails, set null
+                country.setData(null);
+            }
+        }
+
         return country;
     }
 }

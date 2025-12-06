@@ -26,7 +26,6 @@ public class EtlJob {
         this.recordsLoaded = 0L;
     }
 
-    // Getters and Setters
     public Long getJobId() {
         return jobId;
     }

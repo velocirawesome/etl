@@ -57,7 +57,7 @@ public class EtlJobService {
             logger.info("Job {} - Phase 3: Loading complete. Loaded {} records", jobId, transformedData.size());
 
             // Update job status to SUCCESS
-            jobRepository.updateJobStatus(jobId, JobStatus.SUCCESS, LocalDateTime.now());
+            jobRepository.updateJobStatus(jobId, JobStatus.SUCCESS, null);
             logger.info("Job {} completed successfully", jobId);
 
         } catch (Exception e) {

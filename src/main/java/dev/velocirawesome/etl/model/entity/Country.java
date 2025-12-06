@@ -9,12 +9,11 @@ public class Country {
     public Country() {
     }
 
-    public Country(String code, Object data) {
+    public Country(String code, JsonNode data) {
         this.code = code;
-        this.data = (JsonNode) data;
+        this.data = data;
     }
 
-    // Getters and Setters
     public String getCode() {
         return code;
     }
@@ -23,11 +22,11 @@ public class Country {
         this.code = code;
     }
 
-    public Object getData() {
+    public JsonNode getData() {
         return data;
     }
 
-    public void setData(Object data) {
-        this.data = (JsonNode) data;
+    public void setData(JsonNode data) {
+        this.data = data;
     }
 }
