@@ -69,5 +69,6 @@ coverage/
 
 # Project-specific
 .specify/
-.claude/
+.claude/settings.local.json
+.claude/test-logs/
 .mvn/wrapper/maven-wrapper.jar
