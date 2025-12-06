@@ -11,7 +11,7 @@ import tools.jackson.databind.json.JsonMapper;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TransformationServiceTest {
 
@@ -41,10 +41,10 @@ public class TransformationServiceTest {
         List<Country> result = transformationService.transform(records);
 
         // Assert
-        assertEquals(3, result.size());
-        assertEquals("USA", result.get(0).getCode());
-        assertEquals("GBR", result.get(1).getCode());
-        assertEquals("FRA", result.get(2).getCode());
+        assertThat(result).hasSize(3);
+        assertThat(result.get(0).getCode()).isEqualTo("USA");
+        assertThat(result.get(1).getCode()).isEqualTo("GBR");
+        assertThat(result.get(2).getCode()).isEqualTo("FRA");
     }
 
     @Test
@@ -66,9 +66,9 @@ public class TransformationServiceTest {
         List<Country> result = transformationService.transform(records);
 
         // Assert
-        assertEquals(2, result.size()); // Only 2 valid records
-        assertEquals("USA", result.get(0).getCode());
-        assertEquals("FRA", result.get(1).getCode());
+        assertThat(result).hasSize(2); // Only 2 valid records
+        assertThat(result.get(0).getCode()).isEqualTo("USA");
+        assertThat(result.get(1).getCode()).isEqualTo("FRA");
     }
 
     @Test
@@ -80,7 +80,7 @@ public class TransformationServiceTest {
         List<Country> result = transformationService.transform(records);
 
         // Assert
-        assertEquals(0, result.size());
+        assertThat(result).isEmpty();
     }
 
     @Test
@@ -102,8 +102,8 @@ public class TransformationServiceTest {
         List<Country> result = transformationService.transform(records);
 
         // Assert
-        assertEquals(2, result.size());
-        assertEquals("CHN", result.get(0).getCode());
-        assertEquals("IND", result.get(1).getCode());
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getCode()).isEqualTo("CHN");
+        assertThat(result.get(1).getCode()).isEqualTo("IND");
     }
 }
