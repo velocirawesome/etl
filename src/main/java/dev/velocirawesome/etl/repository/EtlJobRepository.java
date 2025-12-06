@@ -1,5 +1,6 @@
 package dev.velocirawesome.etl.repository;
 
+import dev.velocirawesome.etl.jooq.generated.tables.EtlJobs;
 import dev.velocirawesome.etl.model.entity.EtlJob;
 import dev.velocirawesome.etl.model.entity.JobStatus;
 import org.jooq.DSLContext;
@@ -8,8 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.table;
 import static org.jooq.impl.DSL.max;
 
 /**
@@ -37,24 +36,24 @@ public class EtlJobRepository {
     public EtlJob createJob(String sourceUrl) {
         // Get max job_id and increment - transaction isolation ensures concurrency safety
         Long maxJobId = dsl.select(
-                max(field("job_id", Long.class))
-        ).from(table("etl_jobs"))
+                max(EtlJobs.ETL_JOBS.JOB_ID)
+        ).from(EtlJobs.ETL_JOBS)
                 .fetchOne(0, Long.class);
 
         Long newJobId = (maxJobId == null) ? 1L : maxJobId + 1L;
         LocalDateTime now = LocalDateTime.now();
 
         // Insert new job with RUNNING status and all counts initialized to 0
-        dsl.insertInto(table("etl_jobs"))
+        dsl.insertInto(EtlJobs.ETL_JOBS)
                 .columns(
-                        field("job_id"),
-                        field("source_url"),
-                        field("status"),
-                        field("start_time"),
-                        field("records_extracted"),
-                        field("records_transformed"),
-                        field("records_loaded"),
-                        field("error_message")
+                        EtlJobs.ETL_JOBS.JOB_ID,
+                        EtlJobs.ETL_JOBS.SOURCE_URL,
+                        EtlJobs.ETL_JOBS.STATUS,
+                        EtlJobs.ETL_JOBS.START_TIME,
+                        EtlJobs.ETL_JOBS.RECORDS_EXTRACTED,
+                        EtlJobs.ETL_JOBS.RECORDS_TRANSFORMED,
+                        EtlJobs.ETL_JOBS.RECORDS_LOADED,
+                        EtlJobs.ETL_JOBS.ERROR_MESSAGE
                 )
                 .values(newJobId, sourceUrl, JobStatus.RUNNING.toString(), now, 0L, 0L, 0L, null)
                 .execute();
@@ -71,9 +70,9 @@ public class EtlJobRepository {
      */
     @Transactional
     public void updateRecordsExtracted(Long jobId, Long count) {
-        dsl.update(table("etl_jobs"))
-                .set(field("records_extracted"), count)
-                .where(field("job_id").eq(jobId))
+        dsl.update(EtlJobs.ETL_JOBS)
+                .set(EtlJobs.ETL_JOBS.RECORDS_EXTRACTED, count)
+                .where(EtlJobs.ETL_JOBS.JOB_ID.eq(jobId))
                 .execute();
     }
 
@@ -85,9 +84,9 @@ public class EtlJobRepository {
      */
     @Transactional
     public void updateRecordsTransformed(Long jobId, Long count) {
-        dsl.update(table("etl_jobs"))
-                .set(field("records_transformed"), count)
-                .where(field("job_id").eq(jobId))
+        dsl.update(EtlJobs.ETL_JOBS)
+                .set(EtlJobs.ETL_JOBS.RECORDS_TRANSFORMED, count)
+                .where(EtlJobs.ETL_JOBS.JOB_ID.eq(jobId))
                 .execute();
     }
 
@@ -99,9 +98,9 @@ public class EtlJobRepository {
      */
     @Transactional
     public void updateRecordsLoaded(Long jobId, Long count) {
-        dsl.update(table("etl_jobs"))
-                .set(field("records_loaded"), count)
-                .where(field("job_id").eq(jobId))
+        dsl.update(EtlJobs.ETL_JOBS)
+                .set(EtlJobs.ETL_JOBS.RECORDS_LOADED, count)
+                .where(EtlJobs.ETL_JOBS.JOB_ID.eq(jobId))
                 .execute();
     }
 
@@ -122,11 +121,11 @@ public class EtlJobRepository {
             endTime = LocalDateTime.now();
         }
 
-        dsl.update(table("etl_jobs"))
-                .set(field("status"), status.toString())
-                .set(field("end_time"), endTime)
-                .set(field("error_message"), errorMessage)
-                .where(field("job_id").eq(jobId))
+        dsl.update(EtlJobs.ETL_JOBS)
+                .set(EtlJobs.ETL_JOBS.STATUS, status.toString())
+                .set(EtlJobs.ETL_JOBS.END_TIME, endTime)
+                .set(EtlJobs.ETL_JOBS.ERROR_MESSAGE, errorMessage)
+                .where(EtlJobs.ETL_JOBS.JOB_ID.eq(jobId))
                 .execute();
     }
 
@@ -138,8 +137,8 @@ public class EtlJobRepository {
      */
     public EtlJob getLatestJob() {
         var record = dsl.select()
-                .from(table("etl_jobs"))
-                .orderBy(field("start_time").desc())
+                .from(EtlJobs.ETL_JOBS)
+                .orderBy(EtlJobs.ETL_JOBS.START_TIME.desc())
                 .limit(1)
                 .fetchOne();
 
@@ -158,9 +157,9 @@ public class EtlJobRepository {
      */
     public EtlJob getLatestSuccessfulJob() {
         var record = dsl.select()
-                .from(table("etl_jobs"))
-                .where(field("status").eq(JobStatus.SUCCESS.toString()))
-                .orderBy(field("start_time").desc())
+                .from(EtlJobs.ETL_JOBS)
+                .where(EtlJobs.ETL_JOBS.STATUS.eq(JobStatus.SUCCESS.toString()))
+                .orderBy(EtlJobs.ETL_JOBS.START_TIME.desc())
                 .limit(1)
                 .fetchOne();
 
@@ -182,11 +181,11 @@ public class EtlJobRepository {
      */
     @Transactional
     public void updateJobStatusWithError(Long jobId, JobStatus status, LocalDateTime endTime, String errorMessage) {
-        dsl.update(table("etl_jobs"))
-                .set(field("status"), status.toString())
-                .set(field("end_time"), endTime)
-                .set(field("error_message"), errorMessage)
-                .where(field("job_id").eq(jobId))
+        dsl.update(EtlJobs.ETL_JOBS)
+                .set(EtlJobs.ETL_JOBS.STATUS, status.toString())
+                .set(EtlJobs.ETL_JOBS.END_TIME, endTime)
+                .set(EtlJobs.ETL_JOBS.ERROR_MESSAGE, errorMessage)
+                .where(EtlJobs.ETL_JOBS.JOB_ID.eq(jobId))
                 .execute();
     }
 
@@ -198,15 +197,15 @@ public class EtlJobRepository {
      */
     private EtlJob mapRecordToEtlJob(org.jooq.Record record) {
         EtlJob job = new EtlJob();
-        job.setJobId(record.get("job_id", Long.class));
-        job.setSourceUrl(record.get("source_url", String.class));
-        job.setStatus(JobStatus.valueOf(record.get("status", String.class)));
-        job.setStartTime(record.get("start_time", LocalDateTime.class));
-        job.setEndTime(record.get("end_time", LocalDateTime.class));
-        job.setRecordsExtracted(record.get("records_extracted", Long.class));
-        job.setRecordsTransformed(record.get("records_transformed", Long.class));
-        job.setRecordsLoaded(record.get("records_loaded", Long.class));
-        job.setErrorMessage(record.get("error_message", String.class));
+        job.setJobId(record.get(EtlJobs.ETL_JOBS.JOB_ID));
+        job.setSourceUrl(record.get(EtlJobs.ETL_JOBS.SOURCE_URL));
+        job.setStatus(JobStatus.valueOf(record.get(EtlJobs.ETL_JOBS.STATUS)));
+        job.setStartTime(record.get(EtlJobs.ETL_JOBS.START_TIME));
+        job.setEndTime(record.get(EtlJobs.ETL_JOBS.END_TIME));
+        job.setRecordsExtracted(record.get(EtlJobs.ETL_JOBS.RECORDS_EXTRACTED));
+        job.setRecordsTransformed(record.get(EtlJobs.ETL_JOBS.RECORDS_TRANSFORMED));
+        job.setRecordsLoaded(record.get(EtlJobs.ETL_JOBS.RECORDS_LOADED));
+        job.setErrorMessage(record.get(EtlJobs.ETL_JOBS.ERROR_MESSAGE));
         return job;
     }
 }

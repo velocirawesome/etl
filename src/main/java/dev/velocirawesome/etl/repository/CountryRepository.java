@@ -2,6 +2,8 @@ package dev.velocirawesome.etl.repository;
 
 import dev.velocirawesome.etl.model.entity.Country;
 import org.jooq.DSLContext;
+import org.jooq.Field;
+import org.jooq.JSON;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
@@ -12,11 +14,16 @@ import java.util.List;
 
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.table;
+import static org.jooq.impl.DSL.inline;
 
 @Repository
 public class CountryRepository {
 
     private final DSLContext dsl;
+
+    // Type-safe field definitions for countries job tables
+    private static final Field<String> CODE_FIELD = field("CODE", String.class);
+    private static final Field<JSON> DATA_FIELD = field("DATA", JSON.class);
 
     public CountryRepository(DSLContext dsl) {
         this.dsl = dsl;
@@ -38,8 +45,8 @@ public class CountryRepository {
 
         for (Country country : countries) {
             dsl.insertInto(table(tableName))
-                    .columns(field("code"), field("data"))
-                    .values(country.getCode(), country.getData().toString())
+                    .columns(CODE_FIELD, DATA_FIELD)
+                    .values(inline(country.getCode()), inline(JSON.valueOf(country.getData().toString())))
                     .execute();
         }
     }
@@ -62,14 +69,16 @@ public class CountryRepository {
 
     private Country mapRecordToCountry(org.jooq.Record record) {
         Country country = new Country();
-        country.setCode(record.get("code", String.class));
+        // Use type-safe field references instead of string literals
+        country.setCode(record.get(CODE_FIELD));
 
-        String dataStr = record.get("data", String.class);
-        if (dataStr != null) {
+        JSON jsonData = record.get(DATA_FIELD);
+        if (jsonData != null) {
             try {
                 ObjectMapper mapper = new ObjectMapper();
-                JsonNode jsonData = mapper.readTree(dataStr);
-                country.setData(jsonData);
+                // Convert jOOQ JSON to String first, then parse
+                JsonNode parsedData = mapper.readTree(jsonData.data());
+                country.setData(parsedData);
             } catch (Exception e) {
                 // If parsing fails, set null
                 country.setData(null);

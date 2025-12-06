@@ -52,12 +52,15 @@
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+    	<groupId>org.springframework.boot</groupId>
+    	<artifactId>spring-boot-h2console</artifactId>
+</dependency>
 
         <!-- Jackson 3 -->
         <dependency>
             <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson-version}</version>
         </dependency>
 
         <!-- Testing -->
@@ -66,10 +69,58 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- Spring Framework 7.0 Rest Test Client -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.jooq</groupId>
+                <artifactId>jooq-codegen-maven</artifactId>
+                <version>3.18.8</version>
+                <executions>
+                    <execution>
+                        <id>generate-jooq</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.h2database</groupId>
+                        <artifactId>h2</artifactId>
+                        <version>2.2.224</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <jdbc>
+                        <driver>org.h2.Driver</driver>
+                        <url>jdbc:h2:mem:etl;MODE=MYSQL;INIT=RUNSCRIPT FROM 'src/main/resources/schema.sql'</url>
+                        <user>sa</user>
+                        <password></password>
+                    </jdbc>
+                    <generator>
+                        <database>
+                            <name>org.jooq.meta.h2.H2Database</name>
+                            <inputSchema>PUBLIC</inputSchema>
+                            <includes>.*</includes>
+                            <excludes>INFORMATION_SCHEMA.*</excludes>
+                        </database>
+                        <target>
+                            <packageName>dev.velocirawesome.etl.jooq.generated</packageName>
+                            <directory>src/main/java</directory>
+                        </target>
+                    </generator>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
