@@ -34,7 +34,7 @@ public class EtlJobService {
     }
 
     @Async("taskExecutor")
-    public void executePipeline(Long jobId, String sourceUrl) {
+    public void executePipeline(Long jobId, String sourceUrl, Integer delayMs) {
         try {
             logger.info("Starting ETL pipeline for job {}", jobId);
 
@@ -56,6 +56,12 @@ public class EtlJobService {
             jobRepository.updateRecordsLoaded(jobId, (long) transformedData.size());
             logger.info("Job {} - Phase 3: Loading complete. Loaded {} records", jobId, transformedData.size());
 
+            // Simulate async delay if specified
+            if (delayMs != null && delayMs > 0) {
+                logger.info("Job {} - Delaying for {} ms", jobId, delayMs);
+                Thread.sleep(delayMs);
+            }
+            
             // Update job status to SUCCESS
             jobRepository.updateJobStatus(jobId, JobStatus.SUCCESS, null);
             logger.info("Job {} completed successfully", jobId);

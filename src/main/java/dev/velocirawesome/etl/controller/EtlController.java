@@ -40,7 +40,7 @@ public class EtlController {
             logger.info("Created job {} with sourceUrl: {}", job.getJobId(), request.getSourceUrl());
 
             // Start async pipeline
-            etlJobService.executePipeline(job.getJobId(), request.getSourceUrl());
+            etlJobService.executePipeline(job.getJobId(), request.getSourceUrl(), request.getDelayMs());
 
             // Return 202 Accepted with jobId
             EtlRunResponse response = new EtlRunResponse(
