@@ -126,13 +126,15 @@ Where:
 
 **Parallelization**: T033-T034 (DTO + query method) can run in parallel.
 
+**Status**: ✅ COMPLETE
+
 ### Tasks
 
-- [ ] T033 [P] [US2] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/model/dto/EtlStatusResponse.java` with all fields from OpenAPI spec (jobId, sourceUrl, status, timestamps, counts, errorMessage)
-- [ ] T034 [P] [US2] Verify EtlJobRepository.getLatestJob() query (from T020) returns correct job ordered by start_time DESC
-- [ ] T035 [US2] Implement EtlController.getStatus() with GET /etl/status mapping, calling jobRepository.getLatestJob(), mapping EtlJob to EtlStatusResponse
-- [ ] T036 [US2] Add mapToStatusResponse(EtlJob) private helper method in EtlController converting entity to DTO with proper null handling for endTime and errorMessage
-- [ ] T037 [US2] Handle 404 Not Found case when getLatestJob() returns null in EtlController.getStatus()
+- [X] T033 [P] [US2] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/model/dto/EtlStatusResponse.java` with all fields from OpenAPI spec (jobId, sourceUrl, status, timestamps, counts, errorMessage)
+- [X] T034 [P] [US2] Verify EtlJobRepository.getLatestJob() query (from T020) returns correct job ordered by start_time DESC
+- [X] T035 [US2] Implement EtlController.getStatus() with GET /etl/status mapping, calling jobRepository.getLatestJob(), mapping EtlJob to EtlStatusResponse
+- [X] T036 [US2] Add mapToStatusResponse(EtlJob) private helper method in EtlController converting entity to DTO with proper null handling for endTime and errorMessage
+- [X] T037 [US2] Handle 404 Not Found case when getLatestJob() returns null in EtlController.getStatus()
 
 ---
 
@@ -149,15 +151,17 @@ Where:
 
 **Parallelization**: T038-T039 can run in parallel.
 
+**Status**: ✅ COMPLETE
+
 ### Tasks
 
-- [ ] T038 [P] [US3] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/model/dto/CountryRecord.java` with code, data (JsonNode) fields (matching OpenAPI spec)
-- [ ] T039 [P] [US3] Implement EtlJobRepository.getLatestSuccessfulJob() querying etl_jobs WHERE status='SUCCESS' ORDER BY start_time DESC LIMIT 1
-- [ ] T040 [US3] Implement CountryRepository.getCountriesByJobId(jobId) querying countries_job_<jobId> table, fetching all records, mapping Record to Country with Jackson ObjectMapper
-- [ ] T041 [US3] Add mapToCountry(Record) private helper in CountryRepository extracting code and parsing JSON data column into JsonNode
-- [ ] T042 [US3] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/controller/CountryController.java` with @RestController, @RequestMapping("/country")
-- [ ] T043 [US3] Implement CountryController.getCountries() with GET /country mapping, calling jobRepository.getLatestSuccessfulJob() and countryRepository.getCountriesByJobId()
-- [ ] T044 [US3] Add stream mapping Country to CountryRecord in CountryController.getCountries(), handle 404 when no successful jobs found
+- [X] T038 [P] [US3] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/model/dto/CountryRecord.java` with code, data (JsonNode) fields (matching OpenAPI spec)
+- [X] T039 [P] [US3] Implement EtlJobRepository.getLatestSuccessfulJob() querying etl_jobs WHERE status='SUCCESS' ORDER BY start_time DESC LIMIT 1
+- [X] T040 [US3] Implement CountryRepository.getCountriesByJobId(jobId) querying countries_job_<jobId> table, fetching all records, mapping Record to Country with Jackson ObjectMapper
+- [X] T041 [US3] Add mapToCountry(Record) private helper in CountryRepository extracting code and parsing JSON data column into JsonNode
+- [X] T042 [US3] Create `/w/velocirawesome/etl/src/main/java/dev/velocirawesome/etl/controller/CountryController.java` with @RestController, @RequestMapping("/country")
+- [X] T043 [US3] Implement CountryController.getCountries() with GET /country mapping, calling jobRepository.getLatestSuccessfulJob() and countryRepository.getCountriesByJobId()
+- [X] T044 [US3] Add stream mapping Country to CountryRecord in CountryController.getCountries(), handle 404 when no successful jobs found
 
 ---
 
@@ -169,12 +173,14 @@ Where:
 
 **Parallelization**: T045-T046 (tests) can run in parallel.
 
+**Status**: ✅ COMPLETE
+
 ### Tasks
 
-- [ ] T045 [P] Create `/w/velocirawesome/etl/src/test/java/dev/velocirawesome/etl/integration/EtlIntegrationTest.java` with @SpringBootTest, testEtlPipeline_withRealUrl() hitting https://restcountries.com/v3.1/all, polling /etl/status until SUCCESS, verifying /country returns records
-- [ ] T046 [P] Create `/w/velocirawesome/etl/src/test/java/dev/velocirawesome/etl/unit/TransformationServiceTest.java` with testTransform_validRecords() and testTransform_filtersInvalidRecords() using sample JSON
-- [ ] T047 Add SLF4J logging statements to all services (ExtractionService, TransformationService, LoadingService, EtlJobService) at INFO level for job lifecycle, phase transitions, record counts, and ERROR level for exceptions
-- [ ] T048 Run full build with `mvn verify`, test all three endpoints with curl (POST /etl/run, poll GET /etl/status, GET /country), verify 10+ countries loaded successfully
+- [X] T045 [P] Create `/w/velocirawesome/etl/src/test/java/dev/velocirawesome/etl/integration/EtlIntegrationTest.java` with @SpringBootTest, testEtlPipeline_withRealUrl() hitting https://restcountries.com/v3.1/all, polling /etl/status until SUCCESS, verifying /country returns records
+- [X] T046 [P] Create `/w/velocirawesome/etl/src/test/java/dev/velocirawesome/etl/unit/TransformationServiceTest.java` with testTransform_validRecords() and testTransform_filtersInvalidRecords() using sample JSON
+- [X] T047 Add SLF4J logging statements to all services (ExtractionService, TransformationService, LoadingService, EtlJobService) at INFO level for job lifecycle, phase transitions, record counts, and ERROR level for exceptions
+- [X] T048 Run full build with `mvn verify`, test all three endpoints with curl (POST /etl/run, poll GET /etl/status, GET /country), verify 10+ countries loaded successfully
 
 ---
 

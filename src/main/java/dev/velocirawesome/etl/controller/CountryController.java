@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,7 +48,7 @@ public class CountryController {
 
             // Map to CountryRecord DTOs
             List<CountryRecord> response = countries.stream()
-                    .map(c -> new CountryRecord(c.getCode(), (tools.jackson.databind.JsonNode) c.getData()))
+                    .map(c -> new CountryRecord(c.getCode(), c.getData()))
                     .collect(Collectors.toList());
 
             logger.info("Retrieved {} countries from job {}", response.size(), job.getJobId());
@@ -58,5 +59,12 @@ public class CountryController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ErrorResponse("INTERNAL_ERROR", e.getMessage()));
         }
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleException(Exception e) {
+        logger.error("Unhandled exception", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponse("INTERNAL_ERROR", e.getMessage()));
     }
 }

@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS etl_jobs (
 );
 
 -- Index on status and start_time for efficient querying
-CREATE INDEX idx_etl_jobs_status_start_time ON etl_jobs(status, start_time DESC);
+CREATE INDEX IF NOT EXISTS idx_etl_jobs_status_start_time ON etl_jobs(status, start_time DESC);
 
 -- Index on start_time for getLatestJob queries
-CREATE INDEX idx_etl_jobs_start_time ON etl_jobs(start_time DESC);
+CREATE INDEX IF NOT EXISTS idx_etl_jobs_start_time ON etl_jobs(start_time DESC);
