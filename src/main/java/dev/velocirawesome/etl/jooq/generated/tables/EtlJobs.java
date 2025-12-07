@@ -13,19 +13,19 @@ import dev.velocirawesome.etl.model.entity.JobStatus;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
-import java.util.function.Function;
 
+import org.jooq.Condition;
 import org.jooq.Field;
-import org.jooq.ForeignKey;
-import org.jooq.Function9;
 import org.jooq.Index;
 import org.jooq.Name;
-import org.jooq.Record;
-import org.jooq.Records;
-import org.jooq.Row9;
+import org.jooq.PlainSQL;
+import org.jooq.QueryPart;
+import org.jooq.SQL;
 import org.jooq.Schema;
-import org.jooq.SelectField;
+import org.jooq.Select;
+import org.jooq.Stringly;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.TableOptions;
@@ -102,11 +102,11 @@ public class EtlJobs extends TableImpl<EtlJobsRecord> {
     public final TableField<EtlJobsRecord, String> ERROR_MESSAGE = createField(DSL.name("ERROR_MESSAGE"), SQLDataType.VARCHAR(4096), this, "");
 
     private EtlJobs(Name alias, Table<EtlJobsRecord> aliased) {
-        this(alias, aliased, null);
+        this(alias, aliased, (Field<?>[]) null, null);
     }
 
-    private EtlJobs(Name alias, Table<EtlJobsRecord> aliased, Field<?>[] parameters) {
-        super(alias, null, aliased, parameters, DSL.comment(""), TableOptions.table());
+    private EtlJobs(Name alias, Table<EtlJobsRecord> aliased, Field<?>[] parameters, Condition where) {
+        super(alias, null, aliased, parameters, DSL.comment(""), TableOptions.table(), where);
     }
 
     /**
@@ -128,10 +128,6 @@ public class EtlJobs extends TableImpl<EtlJobsRecord> {
      */
     public EtlJobs() {
         this(DSL.name("ETL_JOBS"), null);
-    }
-
-    public <O extends Record> EtlJobs(Table<O> child, ForeignKey<O, EtlJobsRecord> key) {
-        super(child, key, ETL_JOBS);
     }
 
     @Override
@@ -188,27 +184,87 @@ public class EtlJobs extends TableImpl<EtlJobsRecord> {
         return new EtlJobs(name.getQualifiedName(), null);
     }
 
-    // -------------------------------------------------------------------------
-    // Row9 type methods
-    // -------------------------------------------------------------------------
-
+    /**
+     * Create an inline derived table from this table
+     */
     @Override
-    public Row9<Long, String, JobStatus, LocalDateTime, LocalDateTime, Long, Long, Long, String> fieldsRow() {
-        return (Row9) super.fieldsRow();
+    public EtlJobs where(Condition condition) {
+        return new EtlJobs(getQualifiedName(), aliased() ? this : null, null, condition);
     }
 
     /**
-     * Convenience mapping calling {@link SelectField#convertFrom(Function)}.
+     * Create an inline derived table from this table
      */
-    public <U> SelectField<U> mapping(Function9<? super Long, ? super String, ? super JobStatus, ? super LocalDateTime, ? super LocalDateTime, ? super Long, ? super Long, ? super Long, ? super String, ? extends U> from) {
-        return convertFrom(Records.mapping(from));
+    @Override
+    public EtlJobs where(Collection<? extends Condition> conditions) {
+        return where(DSL.and(conditions));
     }
 
     /**
-     * Convenience mapping calling {@link SelectField#convertFrom(Class,
-     * Function)}.
+     * Create an inline derived table from this table
      */
-    public <U> SelectField<U> mapping(Class<U> toType, Function9<? super Long, ? super String, ? super JobStatus, ? super LocalDateTime, ? super LocalDateTime, ? super Long, ? super Long, ? super Long, ? super String, ? extends U> from) {
-        return convertFrom(toType, Records.mapping(from));
+    @Override
+    public EtlJobs where(Condition... conditions) {
+        return where(DSL.and(conditions));
+    }
+
+    /**
+     * Create an inline derived table from this table
+     */
+    @Override
+    public EtlJobs where(Field<Boolean> condition) {
+        return where(DSL.condition(condition));
+    }
+
+    /**
+     * Create an inline derived table from this table
+     */
+    @Override
+    @PlainSQL
+    public EtlJobs where(SQL condition) {
+        return where(DSL.condition(condition));
+    }
+
+    /**
+     * Create an inline derived table from this table
+     */
+    @Override
+    @PlainSQL
+    public EtlJobs where(@Stringly.SQL String condition) {
+        return where(DSL.condition(condition));
+    }
+
+    /**
+     * Create an inline derived table from this table
+     */
+    @Override
+    @PlainSQL
+    public EtlJobs where(@Stringly.SQL String condition, Object... binds) {
+        return where(DSL.condition(condition, binds));
+    }
+
+    /**
+     * Create an inline derived table from this table
+     */
+    @Override
+    @PlainSQL
+    public EtlJobs where(@Stringly.SQL String condition, QueryPart... parts) {
+        return where(DSL.condition(condition, parts));
+    }
+
+    /**
+     * Create an inline derived table from this table
+     */
+    @Override
+    public EtlJobs whereExists(Select<?> select) {
+        return where(DSL.exists(select));
+    }
+
+    /**
+     * Create an inline derived table from this table
+     */
+    @Override
+    public EtlJobs whereNotExists(Select<?> select) {
+        return where(DSL.notExists(select));
     }
 }

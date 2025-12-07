@@ -16,8 +16,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/etl")
 public class EtlController {
 
-    private static final Logger logger = LoggerFactory.getLogger(EtlController.class);
-
     private final EtlJobService etlJobService;
 
     public EtlController(EtlJobService etlJobService) {

@@ -4,12 +4,13 @@ An asynchronous Extract-Transform-Load (ETL) microservice for processing country
 
 ## Features
 
-- **Async Pipeline Execution**: Non-blocking ETL operations with 202 Accepted responses
+- **Async Pipeline Execution**: Non-blocking ETL operations with 202 Accepted responses and configurable delays for testing
 - **Dynamic Job Tracking**: Each job gets a unique ID with status monitoring
 - **Job-Specific Data Tables**: Countries stored in isolation per job (countries_job_<jobId>)
-- **Type-Safe SQL**: jOOQ for compile-time SQL verification
+- **Type-Safe SQL**: jOOQ-generated code for compile-time SQL verification and type safety
+- **Transactional Loading**: ACID-compliant data loading with field projection
 - **Comprehensive Logging**: SLF4J logging at INFO/ERROR levels for job lifecycle
-- **Error Resilience**: Global exception handlers with proper HTTP status codes
+- **Centralized Exception Handling**: @RestControllerAdvice for consistent error responses
 - **Jackson 3 Integration**: Modern JSON processing with JsonNode support
 
 ## Quick Start
@@ -47,12 +48,17 @@ Access the H2 console for database inspection:
 
 **POST /etl/run**
 
-Submit a URL for ETL processing. Returns immediately with job ID.
+Submit a URL for ETL processing. Returns immediately with job ID. Optional `delayMs` parameter simulates async work for testing.
 
 ```bash
 curl -X POST http://localhost:8080/etl/run \
   -H "Content-Type: application/json" \
   -d '{"sourceUrl":"https://restcountries.com/v3.1/all"}'
+
+# With delay for testing parallel jobs
+curl -X POST http://localhost:8080/etl/run \
+  -H "Content-Type: application/json" \
+  -d '{"sourceUrl":"https://restcountries.com/v3.1/all","delayMs":5000}'
 ```
 
 **Response (202 Accepted):**
@@ -154,204 +160,46 @@ curl http://localhost:8080/country | jq '.[0:3]'
 }
 ```
 
-## Happy Path Scenario
+## Happy Path Workflow
 
-This example demonstrates a complete ETL workflow:
+Complete ETL workflow from start to finish:
 
-### Step 1: Start the application
-
+**1. Start the application:**
 ```bash
 mvn spring-boot:run
 ```
 
-Wait for the application to fully start (look for "Started EtlApplication in X seconds").
-
-### Step 2: Submit ETL job
-
+**2. Submit an ETL job:**
 ```bash
-JOB_RESPONSE=$(curl -s -X POST http://localhost:8080/etl/run \
+curl -X POST http://localhost:8080/etl/run \
   -H "Content-Type: application/json" \
-  -d '{"sourceUrl":"https://restcountries.com/v3.1/all"}')
-
-echo "Job Response:"
-echo $JOB_RESPONSE | jq '.'
+  -d '{"sourceUrl":"https://restcountries.com/v3.1/all"}' | jq '.'
 ```
 
-**Expected Output:**
-```json
-{
-  "jobId": 1,
-  "status": "RUNNING",
-  "message": "ETL job started asynchronously"
-}
-```
-
-### Step 3: Poll job status until completion
-
+**3. Check job status:**
 ```bash
-# Poll every 2 seconds until job completes
-echo "Polling job status..."
-for i in {1..30}; do
-  STATUS=$(curl -s http://localhost:8080/etl/status)
-  JOB_STATUS=$(echo $STATUS | jq -r '.status')
-
-  if [ "$JOB_STATUS" = "RUNNING" ]; then
-    echo "[$i] Status: $JOB_STATUS - waiting..."
-    sleep 2
-  else
-    echo "[$i] Status: $JOB_STATUS - job completed!"
-    echo $STATUS | jq '.'
-    break
-  fi
-done
+curl http://localhost:8080/etl/status | jq '.'
 ```
 
-**Expected Output (after ~5-10 seconds):**
-```json
-{
-  "jobId": 1,
-  "sourceUrl": "https://restcountries.com/v3.1/all",
-  "status": "SUCCESS",
-  "startTime": "2025-12-06T14:30:00",
-  "endTime": "2025-12-06T14:30:08",
-  "recordsExtracted": 250,
-  "recordsTransformed": 250,
-  "recordsLoaded": 250,
-  "errorMessage": null
-}
-```
-
-### Step 4: Retrieve loaded country data
-
+**4. Retrieve loaded countries:**
 ```bash
-echo "Retrieving countries..."
-COUNTRIES=$(curl -s http://localhost:8080/country)
+# Get all countries
+curl http://localhost:8080/country | jq '.[0:3]'
 
-echo "Total countries:"
-echo $COUNTRIES | jq 'length'
+# Count total
+curl http://localhost:8080/country | jq 'length'
 
-echo ""
-echo "First 3 countries:"
-echo $COUNTRIES | jq '.[0:3]'
-
-echo ""
-echo "Specific country (Afghanistan):"
-echo $COUNTRIES | jq '.[] | select(.code == "AFG")'
+# Find specific country
+curl http://localhost:8080/country | jq '.[] | select(.code == "AFG")'
 ```
 
-**Expected Output:**
-```
-Total countries:
-250
+**5. Inspect database (optional):**
+```sql
+-- View jobs
+SELECT * FROM etl_jobs ORDER BY start_time DESC;
 
-First 3 countries:
-[
-  {
-    "code": "AFG",
-    "data": {
-      "name": { ... }
-    }
-  },
-  ...
-]
-
-Specific country (Afghanistan):
-{
-  "code": "AFG",
-  "data": {
-    "name": {
-      "common": "Afghanistan",
-      "official": "Islamic Emirate of Afghanistan"
-    },
-    ...
-  }
-}
-```
-
-### Step 5: Check database directly (optional)
-
-```bash
-# Access H2 console at http://localhost:8080/h2-console
-# Then run these queries:
-
--- Check all jobs
-SELECT job_id, status, records_extracted, records_transformed, records_loaded FROM etl_jobs ORDER BY start_time DESC;
-
--- Check latest job
-SELECT * FROM etl_jobs ORDER BY start_time DESC LIMIT 1;
-
--- Check countries for job 1
-SELECT code, data FROM countries_job_1 LIMIT 10;
-```
-
-## Complete Automated Script
-
-Here's a shell script to run the entire happy path scenario:
-
-```bash
-#!/bin/bash
-
-set -e
-
-echo "=== ETL Microservice Happy Path Demo ==="
-echo ""
-
-# Step 1: Submit ETL job
-echo "Step 1: Submitting ETL job..."
-JOB_RESPONSE=$(curl -s -X POST http://localhost:8080/etl/run \
-  -H "Content-Type: application/json" \
-  -d '{"sourceUrl":"https://restcountries.com/v3.1/all"}')
-
-JOB_ID=$(echo $JOB_RESPONSE | jq -r '.jobId')
-echo "✓ Job submitted with ID: $JOB_ID"
-echo "  Status: $(echo $JOB_RESPONSE | jq -r '.status')"
-echo ""
-
-# Step 2: Poll status
-echo "Step 2: Polling job status..."
-for i in {1..30}; do
-  STATUS=$(curl -s http://localhost:8080/etl/status)
-  JOB_STATUS=$(echo $STATUS | jq -r '.status')
-
-  if [ "$JOB_STATUS" = "RUNNING" ]; then
-    printf "."
-    sleep 2
-  elif [ "$JOB_STATUS" = "SUCCESS" ]; then
-    echo ""
-    echo "✓ Job completed successfully!"
-    echo "  Records Extracted: $(echo $STATUS | jq -r '.recordsExtracted')"
-    echo "  Records Transformed: $(echo $STATUS | jq -r '.recordsTransformed')"
-    echo "  Records Loaded: $(echo $STATUS | jq -r '.recordsLoaded')"
-    break
-  else
-    echo ""
-    echo "✗ Job failed with status: $JOB_STATUS"
-    echo "  Error: $(echo $STATUS | jq -r '.errorMessage')"
-    exit 1
-  fi
-done
-echo ""
-
-# Step 3: Retrieve countries
-echo "Step 3: Retrieving country data..."
-COUNTRIES=$(curl -s http://localhost:8080/country)
-COUNTRY_COUNT=$(echo $COUNTRIES | jq 'length')
-echo "✓ Retrieved $COUNTRY_COUNT countries"
-echo ""
-
-# Step 4: Show sample
-echo "Step 4: Sample countries:"
-echo $COUNTRIES | jq '.[0:3]'
-echo ""
-
-echo "=== Happy Path Demo Complete ==="
-```
-
-Save as `happy-path.sh`, make executable, and run:
-
-```bash
-chmod +x happy-path.sh
-./happy-path.sh
+-- View countries for job 1
+SELECT * FROM countries_job_1 LIMIT 10;
 ```
 
 ## Project Structure
@@ -406,84 +254,58 @@ src/
 
 - **Java**: 25 (latest LTS with preview features)
 - **Spring Boot**: 4.0.0 (latest major version)
-- **jOOQ**: For type-safe SQL queries
+- **jOOQ**: Code generation for type-safe SQL queries
 - **H2**: In-memory database for development/testing
 - **Jackson 3**: Modern JSON processing (tools.jackson.*)
 - **SLF4J**: Logging framework
-- **JUnit 5**: Testing framework
+- **JUnit 5 + AssertJ**: Testing framework with fluent assertions
 
 ## Key Design Decisions
 
-### 1. String Concatenation for Table Names
-SQL cannot parameterize table names - they must be known at parse-time. The safe approach uses string concatenation with validated Long jobIds:
-```java
-String tableName = "countries_job_" + jobId; // jobId is validated Long, prefix is hardcoded
-```
+### 1. jOOQ Code Generation
+Type-safe database access using generated classes:
+- Run `mvn clean jooq-codegen:generate` to regenerate from schema
+- Compile-time SQL verification prevents runtime errors
+- Auto-completion and refactoring support in IDE
 
-### 2. Async Execution
-The `EtlJobService.executePipeline()` method runs asynchronously:
+### 2. Centralized Exception Handling
+`@RestControllerAdvice` provides consistent error responses:
+- All exceptions mapped to proper HTTP status codes
+- Structured error response format across all endpoints
+- Automatic logging of error details
+
+### 3. Transactional Data Loading
+Loading phase uses `@Transactional` for ACID compliance:
+- All-or-nothing writes to database
+- Field projection extracts only needed JSON fields
+- Automatic rollback on failures
+
+### 4. Async Execution with Configurable Delays
+The `EtlJobService.executePipeline()` runs asynchronously:
 - Returns 202 Accepted immediately
-- Pipeline executes in thread pool executor
-- Job status updates after each phase
-- Allows concurrent job processing
+- Optional `delayMs` parameter simulates long-running jobs
+- Enables testing of parallel job execution
+- Thread pool executor allows concurrent processing
 
-### 3. Job-Specific Tables
-Each ETL job creates its own countries table:
-- `countries_job_1` for job 1
-- `countries_job_2` for job 2
-- Prevents data collisions
-- Allows easy cleanup by job
-
-### 4. Transformation Validation
-Countries must have both `cca3` (code) and `name` fields to be valid:
-```java
-if (record.has("cca3") && record.has("name")) {
-    // Valid country - include in results
-}
-```
+### 5. Job-Specific Tables
+Each ETL job creates its own countries table (e.g., `countries_job_1`):
+- Prevents data collisions between concurrent jobs
+- Simplifies cleanup and job isolation
+- Table names use validated Long jobIds with hardcoded prefix
 
 ## Testing
 
 Run all tests:
-
 ```bash
 mvn test
 ```
 
 Run specific test:
-
 ```bash
-mvn test -Dtest=TransformationServiceTest
+mvn test -Dtest=EtlControllerTest
 ```
 
-View test reports:
-
-```bash
-open target/surefire-reports/index.html
-```
-
-## Troubleshooting
-
-### Job stuck in RUNNING status
-
-The async executor may be busy. Check logs for errors:
-
-```bash
-# View ERROR logs
-curl http://localhost:8080/etl/status | jq '.errorMessage'
-```
-
-### H2 Index Already Exists Error
-
-The schema uses `CREATE INDEX IF NOT EXISTS` to avoid duplicate index errors on re-initialization.
-
-### Network Timeout
-
-If the REST Countries API is slow, increase the wait time in polling:
-
-```bash
-sleep 5  # Increase from 2 seconds
-```
+The project includes comprehensive unit and integration tests using JUnit 5 and AssertJ for fluent assertions.
 
 ## License
 
