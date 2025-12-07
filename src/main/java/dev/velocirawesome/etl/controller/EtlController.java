@@ -19,11 +19,9 @@ public class EtlController {
 
     private static final Logger logger = LoggerFactory.getLogger(EtlController.class);
 
-    private final EtlJobRepository jobRepository;
     private final EtlJobService etlJobService;
 
-    public EtlController(EtlJobRepository jobRepository, EtlJobService etlJobService) {
-        this.jobRepository = jobRepository;
+    public EtlController(EtlJobService etlJobService) {
         this.etlJobService = etlJobService;
     }
 
@@ -35,17 +33,16 @@ public class EtlController {
                         .body(new ErrorResponse("VALIDATION_ERROR", "sourceUrl is required"));
             }
 
-            // Create job
-            var job = jobRepository.createJob(request.getSourceUrl());
-            logger.info("Created job {} with sourceUrl: {}", job.getJobId(), request.getSourceUrl());
-
+            // Create job record
+            EtlJob job = etlJobService.createJob(request);
+            
             // Start async pipeline
-            etlJobService.executePipeline(job.getJobId(), request.getSourceUrl(), request.getDelayMs());
+            etlJobService.executePipeline(job, request.getDelayMs());
 
             // Return 202 Accepted with jobId
             EtlRunResponse response = new EtlRunResponse(
                     job.getJobId(),
-                    job.getStatus().toString(),
+                    job.getStatus(),
                     "ETL job started asynchronously"
             );
 
@@ -61,7 +58,7 @@ public class EtlController {
     @GetMapping("/status")
     public ResponseEntity<?> getStatus() {
         try {
-            EtlJob job = jobRepository.getLatestJob();
+            EtlJob job = etlJobService.getLatestJob();
 
             if (job == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -82,7 +79,7 @@ public class EtlController {
         return new EtlStatusResponse(
                 job.getJobId(),
                 job.getSourceUrl(),
-                job.getStatus().toString(),
+                job.getStatus(),
                 job.getStartTime(),
                 job.getEndTime(),
                 job.getRecordsExtracted() != null ? job.getRecordsExtracted() : 0L,

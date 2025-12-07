@@ -6,6 +6,7 @@ import dev.velocirawesome.etl.repository.CountryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -20,7 +21,18 @@ public class LoadingService {
         this.countryRepository = countryRepository;
     }
 
-    @Transactional
+    /**
+     * Loads transformed country data into a job-specific table.
+     * 
+     * This method uses PROPAGATION.SUPPORTS to participate in the parent loading phase
+     * transaction, ensuring that table creation and inserts are atomic.
+     * All operations succeed together or fail together - no orphaned tables or partial loads.
+     *
+     * @param jobId the job ID
+     * @param countries the list of transformed Country objects to load
+     * @throws LoadingException if loading fails for any reason
+     */
+    @Transactional(propagation = Propagation.SUPPORTS)
     public void load(Long jobId, List<Country> countries) {
         try {
             logger.info("Starting loading of {} countries for job {}", countries.size(), jobId);

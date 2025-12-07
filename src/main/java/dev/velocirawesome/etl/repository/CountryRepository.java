@@ -5,6 +5,7 @@ import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.JSON;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -29,7 +30,16 @@ public class CountryRepository {
         this.dsl = dsl;
     }
 
-    @Transactional
+    /**
+     * Creates a job-specific table for storing country data.
+     * 
+     * Uses PROPAGATION.SUPPORTS to participate in parent loading phase transaction,
+     * ensuring atomicity with subsequent insert operations and status updates.
+     * If table creation fails, the entire loading transaction can rollback.
+     *
+     * @param jobId the job ID
+     */
+    @Transactional(propagation = Propagation.SUPPORTS)
     public void createJobTable(Long jobId) {
         String tableName = "countries_job_" + jobId;
         String sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
@@ -39,7 +49,17 @@ public class CountryRepository {
         dsl.execute(sql);
     }
 
-    @Transactional
+    /**
+     * Inserts country records into a job-specific table.
+     * 
+     * Uses PROPAGATION.SUPPORTS to participate in parent loading phase transaction,
+     * ensuring all inserts succeed or all fail together. If any insert violates constraints,
+     * the entire loading transaction can rollback.
+     *
+     * @param jobId the job ID
+     * @param countries the list of Country objects to insert
+     */
+    @Transactional(propagation = Propagation.SUPPORTS)
     public void insertCountries(Long jobId, List<Country> countries) {
         String tableName = "countries_job_" + jobId;
 

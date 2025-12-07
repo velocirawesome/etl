@@ -4,10 +4,12 @@
 package dev.velocirawesome.etl.jooq.generated.tables;
 
 
+import dev.velocirawesome.etl.jooq.converters.JobStatusConverter;
 import dev.velocirawesome.etl.jooq.generated.Indexes;
 import dev.velocirawesome.etl.jooq.generated.Keys;
 import dev.velocirawesome.etl.jooq.generated.Public;
 import dev.velocirawesome.etl.jooq.generated.tables.records.EtlJobsRecord;
+import dev.velocirawesome.etl.model.entity.JobStatus;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -67,7 +69,7 @@ public class EtlJobs extends TableImpl<EtlJobsRecord> {
     /**
      * The column <code>PUBLIC.ETL_JOBS.STATUS</code>.
      */
-    public final TableField<EtlJobsRecord, String> STATUS = createField(DSL.name("STATUS"), SQLDataType.VARCHAR(20).nullable(false).defaultValue(DSL.field(DSL.raw("'RUNNING'"), SQLDataType.VARCHAR)), this, "");
+    public final TableField<EtlJobsRecord, JobStatus> STATUS = createField(DSL.name("STATUS"), SQLDataType.VARCHAR(20).nullable(false).defaultValue(DSL.field(DSL.raw("'RUNNING'"), SQLDataType.VARCHAR)), this, "", new JobStatusConverter());
 
     /**
      * The column <code>PUBLIC.ETL_JOBS.START_TIME</code>.
@@ -191,14 +193,14 @@ public class EtlJobs extends TableImpl<EtlJobsRecord> {
     // -------------------------------------------------------------------------
 
     @Override
-    public Row9<Long, String, String, LocalDateTime, LocalDateTime, Long, Long, Long, String> fieldsRow() {
+    public Row9<Long, String, JobStatus, LocalDateTime, LocalDateTime, Long, Long, Long, String> fieldsRow() {
         return (Row9) super.fieldsRow();
     }
 
     /**
      * Convenience mapping calling {@link SelectField#convertFrom(Function)}.
      */
-    public <U> SelectField<U> mapping(Function9<? super Long, ? super String, ? super String, ? super LocalDateTime, ? super LocalDateTime, ? super Long, ? super Long, ? super Long, ? super String, ? extends U> from) {
+    public <U> SelectField<U> mapping(Function9<? super Long, ? super String, ? super JobStatus, ? super LocalDateTime, ? super LocalDateTime, ? super Long, ? super Long, ? super Long, ? super String, ? extends U> from) {
         return convertFrom(Records.mapping(from));
     }
 
@@ -206,7 +208,7 @@ public class EtlJobs extends TableImpl<EtlJobsRecord> {
      * Convenience mapping calling {@link SelectField#convertFrom(Class,
      * Function)}.
      */
-    public <U> SelectField<U> mapping(Class<U> toType, Function9<? super Long, ? super String, ? super String, ? super LocalDateTime, ? super LocalDateTime, ? super Long, ? super Long, ? super Long, ? super String, ? extends U> from) {
+    public <U> SelectField<U> mapping(Class<U> toType, Function9<? super Long, ? super String, ? super JobStatus, ? super LocalDateTime, ? super LocalDateTime, ? super Long, ? super Long, ? super Long, ? super String, ? extends U> from) {
         return convertFrom(toType, Records.mapping(from));
     }
 }

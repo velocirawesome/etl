@@ -2,6 +2,7 @@ package dev.velocirawesome.etl.service;
 
 import dev.velocirawesome.etl.exception.TransformationException;
 import dev.velocirawesome.etl.model.entity.Country;
+import dev.velocirawesome.etl.service.json.JsonFieldProjector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,16 @@ import java.util.List;
 public class TransformationService {
 
     private static final Logger logger = LoggerFactory.getLogger(TransformationService.class);
+    private final JsonFieldProjector jsonFieldProjector;
+
+    /**
+     * Constructor injection of JsonFieldProjector (configured in TransformationConfig).
+     *
+     * @param jsonFieldProjector the JSON field projection utility
+     */
+    public TransformationService(JsonFieldProjector jsonFieldProjector) {
+        this.jsonFieldProjector = jsonFieldProjector;
+    }
 
     public List<Country> transform(List<JsonNode> records) {
         try {
@@ -24,10 +35,14 @@ public class TransformationService {
 
             for (JsonNode record : records) {
                 try {
-                    // Validate required fields: code and name
-                    if (record.has("cca3") && record.has("name")) {
-                        String code = record.get("cca3").asText();
-                        Country country = new Country(code, record);
+                    // Validate required field: cca3 (country code)
+                    if (record.has("cca3")) {
+                        String code = record.get("cca3").asString();
+
+                        // Transform: project fields using configured filter
+                        JsonNode transformedRecord = jsonFieldProjector.project(record);
+
+                        Country country = new Country(code, transformedRecord);
                         countries.add(country);
                     } else {
                         skipped++;

@@ -1,11 +1,13 @@
 package dev.velocirawesome.etl.model.dto;
 
+import dev.velocirawesome.etl.model.entity.JobStatus;
+
 import java.time.LocalDateTime;
 
 public class EtlStatusResponse {
     private Long jobId;
     private String sourceUrl;
-    private String status;
+    private JobStatus status;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private Long recordsExtracted;
@@ -16,7 +18,7 @@ public class EtlStatusResponse {
     public EtlStatusResponse() {
     }
 
-    public EtlStatusResponse(Long jobId, String sourceUrl, String status, LocalDateTime startTime,
+    public EtlStatusResponse(Long jobId, String sourceUrl, JobStatus status, LocalDateTime startTime,
                            LocalDateTime endTime, Long recordsExtracted, Long recordsTransformed,
                            Long recordsLoaded, String errorMessage) {
         this.jobId = jobId;
@@ -47,11 +49,11 @@ public class EtlStatusResponse {
         this.sourceUrl = sourceUrl;
     }
 
-    public String getStatus() {
+    public JobStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(JobStatus status) {
         this.status = status;
     }
 

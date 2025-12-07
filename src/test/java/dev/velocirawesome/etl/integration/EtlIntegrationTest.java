@@ -63,7 +63,7 @@ public class EtlIntegrationTest {
                 .consumeWith(result -> {
                     assertThat(result.getResponseBody()).isNotNull().withFailMessage("Response body should not be null");
                     assertThat(result.getResponseBody().getJobId()).isNotNull().withFailMessage("Job ID should be present");
-                    assertThat(result.getResponseBody().getStatus()).isEqualTo(JobStatus.RUNNING.toString()).withFailMessage("Initial status should be RUNNING");
+                    assertThat(result.getResponseBody().getStatus()).isEqualTo(JobStatus.RUNNING).withFailMessage("Initial status should be RUNNING");
                 })
                 .returnResult()
                 .getResponseBody();
@@ -77,7 +77,7 @@ public class EtlIntegrationTest {
 
         // Step 3: Verify job succeeded
         assertThat(finalStatus).isNotNull().withFailMessage("Job should complete within timeout period");
-        assertThat(finalStatus.getStatus()).isEqualTo(JobStatus.SUCCESS.toString()).withFailMessage("Job should complete with SUCCESS status. Error: " + finalStatus.getErrorMessage());
+        assertThat(finalStatus.getStatus()).isEqualTo(JobStatus.SUCCESS).withFailMessage("Job should complete with SUCCESS status. Error: " + finalStatus.getErrorMessage());
 
         // Step 4: Verify ETL pipeline processed data
         assertThat(finalStatus.getRecordsExtracted()).isGreaterThan(0).withFailMessage("Should have extracted records from API");
@@ -126,10 +126,10 @@ public class EtlIntegrationTest {
                     .getResponseBody();
 
             if (status != null) {
-                String jobStatus = status.getStatus();
+                JobStatus jobStatus = status.getStatus();
 
                 // Check if job has completed
-                if (JobStatus.SUCCESS.toString().equals(jobStatus) || JobStatus.FAILED.toString().equals(jobStatus)) {
+                if (JobStatus.SUCCESS.equals(jobStatus) || JobStatus.FAILED.equals(jobStatus)) {
                     return status;
                 }
             }
@@ -237,12 +237,6 @@ public class EtlIntegrationTest {
         assertThat(JobStatus.valueOf("FAILED")).isEqualTo(JobStatus.FAILED);
     }
 
-    @Test
-    public void testApplicationContextLoads() {
-        // Test that the application context loads successfully
-        assertThat(true).isTrue();
-    }
-
     /**
      * Test that verifies parallel job processing.
      * This test:
@@ -304,7 +298,7 @@ public class EtlIntegrationTest {
 
         // At this point (2 seconds after starting both jobs), both should still be running
         // because they each have a 5-second delay
-        assertThat(latestJobStatus.getStatus()).isEqualTo(JobStatus.RUNNING.toString())
+        assertThat(latestJobStatus.getStatus()).isEqualTo(JobStatus.RUNNING)
                 .withFailMessage("Latest job should still be RUNNING due to delay");
 
         System.out.println("Verified both jobs are running in parallel");
@@ -323,7 +317,7 @@ public class EtlIntegrationTest {
                 .getResponseBody();
 
         assertThat(finalStatus).isNotNull().withFailMessage("Final status should not be null");
-        assertThat(finalStatus.getStatus()).isIn(JobStatus.SUCCESS.toString(), JobStatus.FAILED.toString())
+        assertThat(finalStatus.getStatus()).isIn(JobStatus.SUCCESS, JobStatus.FAILED)
                 .withFailMessage("Job should have completed (SUCCESS or FAILED)");
 
         System.out.println("Parallel job test completed");

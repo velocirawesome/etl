@@ -5,6 +5,7 @@ import dev.velocirawesome.etl.model.entity.EtlJob;
 import dev.velocirawesome.etl.model.entity.JobStatus;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -55,7 +56,7 @@ public class EtlJobRepository {
                         EtlJobs.ETL_JOBS.RECORDS_LOADED,
                         EtlJobs.ETL_JOBS.ERROR_MESSAGE
                 )
-                .values(newJobId, sourceUrl, JobStatus.RUNNING.toString(), now, 0L, 0L, 0L, null)
+            .values(newJobId, sourceUrl, JobStatus.RUNNING, now, 0L, 0L, 0L, null)
                 .execute();
 
         // Return the created job
@@ -64,11 +65,14 @@ public class EtlJobRepository {
 
     /**
      * T019: Updates the number of records extracted for a job.
+     * 
+     * Uses PROPAGATION.SUPPORTS to allow participation in loading phase transaction
+     * if called within it, while still supporting standalone calls for testing.
      *
      * @param jobId the job ID
      * @param count the number of records extracted
      */
-    @Transactional
+    @Transactional(propagation = Propagation.SUPPORTS)
     public void updateRecordsExtracted(Long jobId, Long count) {
         dsl.update(EtlJobs.ETL_JOBS)
                 .set(EtlJobs.ETL_JOBS.RECORDS_EXTRACTED, count)
@@ -78,11 +82,14 @@ public class EtlJobRepository {
 
     /**
      * T019: Updates the number of records transformed for a job.
+     * 
+     * Uses PROPAGATION.SUPPORTS to allow participation in loading phase transaction
+     * if called within it, while still supporting standalone calls for testing.
      *
      * @param jobId the job ID
      * @param count the number of records transformed
      */
-    @Transactional
+    @Transactional(propagation = Propagation.SUPPORTS)
     public void updateRecordsTransformed(Long jobId, Long count) {
         dsl.update(EtlJobs.ETL_JOBS)
                 .set(EtlJobs.ETL_JOBS.RECORDS_TRANSFORMED, count)
@@ -92,11 +99,14 @@ public class EtlJobRepository {
 
     /**
      * T019: Updates the number of records loaded for a job.
+     * 
+     * Uses PROPAGATION.SUPPORTS to participate in loading phase transaction,
+     * ensuring count update is atomic with table creation and inserts.
      *
      * @param jobId the job ID
      * @param count the number of records loaded
      */
-    @Transactional
+    @Transactional(propagation = Propagation.SUPPORTS)
     public void updateRecordsLoaded(Long jobId, Long count) {
         dsl.update(EtlJobs.ETL_JOBS)
                 .set(EtlJobs.ETL_JOBS.RECORDS_LOADED, count)
@@ -107,12 +117,15 @@ public class EtlJobRepository {
     /**
      * T019: Updates the job status and optionally sets error message.
      * Sets endTime if status is SUCCESS or FAILED.
+     * 
+     * Uses PROPAGATION.SUPPORTS to participate in loading phase transaction,
+     * ensuring status update is atomic with all loading operations.
      *
      * @param jobId the job ID
      * @param status the new job status
      * @param errorMessage optional error message (null if no error)
      */
-    @Transactional
+    @Transactional(propagation = Propagation.SUPPORTS)
     public void updateJobStatus(Long jobId, JobStatus status, String errorMessage) {
         LocalDateTime endTime = null;
 
@@ -122,11 +135,11 @@ public class EtlJobRepository {
         }
 
         dsl.update(EtlJobs.ETL_JOBS)
-                .set(EtlJobs.ETL_JOBS.STATUS, status.toString())
-                .set(EtlJobs.ETL_JOBS.END_TIME, endTime)
-                .set(EtlJobs.ETL_JOBS.ERROR_MESSAGE, errorMessage)
-                .where(EtlJobs.ETL_JOBS.JOB_ID.eq(jobId))
-                .execute();
+            .set(EtlJobs.ETL_JOBS.STATUS, status)
+            .set(EtlJobs.ETL_JOBS.END_TIME, endTime)
+            .set(EtlJobs.ETL_JOBS.ERROR_MESSAGE, errorMessage)
+            .where(EtlJobs.ETL_JOBS.JOB_ID.eq(jobId))
+            .execute();
     }
 
     /**
@@ -157,11 +170,11 @@ public class EtlJobRepository {
      */
     public EtlJob getLatestSuccessfulJob() {
         var record = dsl.select()
-                .from(EtlJobs.ETL_JOBS)
-                .where(EtlJobs.ETL_JOBS.STATUS.eq(JobStatus.SUCCESS.toString()))
-                .orderBy(EtlJobs.ETL_JOBS.START_TIME.desc())
-                .limit(1)
-                .fetchOne();
+            .from(EtlJobs.ETL_JOBS)
+            .where(EtlJobs.ETL_JOBS.STATUS.eq(JobStatus.SUCCESS))
+            .orderBy(EtlJobs.ETL_JOBS.START_TIME.desc())
+            .limit(1)
+            .fetchOne();
 
         if (record == null) {
             return null;
@@ -173,6 +186,9 @@ public class EtlJobRepository {
     /**
      * Updates job status with error message.
      * This is a helper method for error handling in service layer.
+     * 
+     * Note: This is called from async context (executePipeline catch block) with its own
+     * transaction context, independent from the main pipeline transaction.
      *
      * @param jobId the job ID
      * @param status the new job status
@@ -182,11 +198,20 @@ public class EtlJobRepository {
     @Transactional
     public void updateJobStatusWithError(Long jobId, JobStatus status, LocalDateTime endTime, String errorMessage) {
         dsl.update(EtlJobs.ETL_JOBS)
-                .set(EtlJobs.ETL_JOBS.STATUS, status.toString())
-                .set(EtlJobs.ETL_JOBS.END_TIME, endTime)
-                .set(EtlJobs.ETL_JOBS.ERROR_MESSAGE, errorMessage)
-                .where(EtlJobs.ETL_JOBS.JOB_ID.eq(jobId))
-                .execute();
+            .set(EtlJobs.ETL_JOBS.STATUS, status)
+            .set(EtlJobs.ETL_JOBS.END_TIME, endTime)
+            .set(EtlJobs.ETL_JOBS.ERROR_MESSAGE, errorMessage)
+            .where(EtlJobs.ETL_JOBS.JOB_ID.eq(jobId))
+            .execute();
+    }
+
+    /**
+     * Deletes all ETL jobs from the database.
+     * This is primarily useful for testing to ensure a clean state.
+     */
+    @Transactional
+    public void deleteAll() {
+        dsl.deleteFrom(EtlJobs.ETL_JOBS).execute();
     }
 
     /**
@@ -199,7 +224,17 @@ public class EtlJobRepository {
         EtlJob job = new EtlJob();
         job.setJobId(record.get(EtlJobs.ETL_JOBS.JOB_ID));
         job.setSourceUrl(record.get(EtlJobs.ETL_JOBS.SOURCE_URL));
-        job.setStatus(JobStatus.valueOf(record.get(EtlJobs.ETL_JOBS.STATUS)));
+        // `record.get(EtlJobs.ETL_JOBS.STATUS)` may be a String (older generated code) or a JobStatus (new codegen with converter)
+        Object rawStatus = record.get(EtlJobs.ETL_JOBS.STATUS);
+        if (rawStatus instanceof JobStatus) {
+            job.setStatus((JobStatus) rawStatus);
+        } else if (rawStatus instanceof String) {
+            job.setStatus(JobStatus.valueOf((String) rawStatus));
+        } else if (rawStatus == null) {
+            job.setStatus(null);
+        } else {
+            job.setStatus(JobStatus.valueOf(rawStatus.toString()));
+        }
         job.setStartTime(record.get(EtlJobs.ETL_JOBS.START_TIME));
         job.setEndTime(record.get(EtlJobs.ETL_JOBS.END_TIME));
         job.setRecordsExtracted(record.get(EtlJobs.ETL_JOBS.RECORDS_EXTRACTED));

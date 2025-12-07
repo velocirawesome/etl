@@ -1,14 +1,16 @@
 package dev.velocirawesome.etl.model.dto;
 
+import dev.velocirawesome.etl.model.entity.JobStatus;
+
 public class EtlRunResponse {
     private Long jobId;
-    private String status;
+    private JobStatus status;
     private String message;
 
     public EtlRunResponse() {
     }
 
-    public EtlRunResponse(Long jobId, String status, String message) {
+    public EtlRunResponse(Long jobId, JobStatus status, String message) {
         this.jobId = jobId;
         this.status = status;
         this.message = message;
@@ -22,11 +24,11 @@ public class EtlRunResponse {
         this.jobId = jobId;
     }
 
-    public String getStatus() {
+    public JobStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(JobStatus status) {
         this.status = status;
     }
 
