@@ -53,12 +53,12 @@ Submit a URL for ETL processing. Returns immediately with job ID. Optional `dela
 ```bash
 curl -X POST http://localhost:8080/etl/run \
   -H "Content-Type: application/json" \
-  -d '{"sourceUrl":"https://restcountries.com/v3.1/all"}'
+  -d '{"sourceUrl":"https://restcountries.com/v3.1/all?fields=name,cca2,cca3,capital,region,population,area,languages,currencies,flag"}'
 
 # With delay for testing parallel jobs
 curl -X POST http://localhost:8080/etl/run \
   -H "Content-Type: application/json" \
-  -d '{"sourceUrl":"https://restcountries.com/v3.1/all","delayMs":5000}'
+  -d '{"sourceUrl":"https://restcountries.com/v3.1/all?fields=name,cca2,cca3,capital,region,population,area,languages,currencies,flag","delayMs":5000}'
 ```
 
 **Response (202 Accepted):**
@@ -173,7 +173,7 @@ mvn spring-boot:run
 ```bash
 curl -X POST http://localhost:8080/etl/run \
   -H "Content-Type: application/json" \
-  -d '{"sourceUrl":"https://restcountries.com/v3.1/all"}' | jq '.'
+  -d '{"sourceUrl":"https://restcountries.com/v3.1/all?fields=name,cca2,cca3,capital,region,population,area,languages,currencies,flag","delayMs":5000" }' | jq '.'
 ```
 
 **3. Check job status:**
