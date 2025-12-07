@@ -1,14 +1,10 @@
 package dev.velocirawesome.etl.unit;
 
-import dev.velocirawesome.etl.exception.TransformationException;
 import dev.velocirawesome.etl.model.entity.Country;
 import dev.velocirawesome.etl.service.TransformationService;
-import dev.velocirawesome.etl.service.json.FieldFilter;
-import dev.velocirawesome.etl.service.json.JsonFieldProjector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
@@ -23,14 +19,7 @@ public class TransformationServiceTest {
 
     @BeforeEach
     public void setUp() {
-        // Create the same lambda filter as in TransformationConfig
-        FieldFilter fieldFilter = fieldName -> fieldName != null &&
-                                               fieldName.toLowerCase().startsWith("n");
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonFieldProjector jsonFieldProjector = new JsonFieldProjector(fieldFilter, objectMapper);
-
-        transformationService = new TransformationService(jsonFieldProjector);
+        transformationService = new TransformationService();
         jsonMapper = JsonMapper.builder().build();
     }
 
